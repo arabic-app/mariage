@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur - Attestation de Mariage</title>
+    <style>
+        /* Styles de base pour l'écran */
+        body { 
+            font-family: 'Arial', sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background: #525659; /* Couleur de fond style visionneuse PDF */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .bold { font-weight: bold; }
+
+        /* Formulaire (RESPONSIVE) */
+        .form-container {
+            width: 100%; 
+            max-width: 210mm; 
+            background: white; 
+            padding: 20px;
+            border-radius: 8px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+        .form-section {
+            border: 1px solid #e0e0e0;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+            background: #fdfdfd;
+        }
+        .form-section h3 { 
+            margin-top: 0; 
+            font-size: 16px; 
+            color: #333; 
+            border-bottom: 2px solid #0056b3; 
+            padding-bottom: 5px; 
+            display: inline-block;
+        }
+        
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-weight: bold; margin-bottom: 5px; color: #444; font-size: 14px; }
+        .form-group input, .form-group select { 
+            width: 100%; padding: 10px; box-sizing: border-box; 
+            border: 1px solid #ccc; border-radius: 4px; font-size: 15px;
+        }
+        .btn { 
+            background: #0056b3; color: white; border: none; 
+            padding: 15px; cursor: pointer; border-radius: 4px; 
+            font-size: 16px; width: 100%; font-weight: bold; margin-top: 10px;
+        }
+        .btn:hover { background: #004494; }
+
+        /* Conteneur pour permettre le scroll de la feuille A4 sur smartphone */
+        .preview-wrapper {
+            width: 100%;
+            max-width: 210mm;
+            overflow-x: auto; 
+            padding-bottom: 15px; 
+        }
+
+        /* Conteneur du Certificat - FORMAT A4 EXACT */
+        .page-a4 {
+            width: 210mm;
+            min-width: 210mm; 
+            height: 297mm; 
+            background: white;
+            padding: 20mm; 
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            box-sizing: border-box;
+            
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* En-tête (Header) */
+        .header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-start; 
+            margin-bottom: 25px; 
+        }
+        .header-left { 
+            text-align: left; 
+            font-size: 14px; 
+            line-height: 1.5; 
+            width: 30%;
+        }
+        .header-center { 
+            text-align: center; 
+            width: 40%;
+            margin-top: 10px;
+        }
+        .header-right {
+            text-align: right;
+            width: 30%;
+        }
+        
+        /* LOGO */
+        .logo {
+            max-width: 120px;
+            max-height: 120px;
+            object-fit: contain;
+            margin-top: -20px; 
+        }
+
+        .title-ar { font-size: 32px; font-weight: bold; margin: 0; font-family: 'Times New Roman', serif; }
+        .title-fr { font-size: 22px; font-weight: bold; margin: 0; text-transform: uppercase; }
+        .subtitle { font-size: 16px; margin: 5px 0 0 0; font-style: italic; }
+
+        .bismillah { 
+            text-align: center; font-size: 20px; margin-bottom: 25px; 
+            font-family: 'Times New Roman', serif; direction: rtl;
+        }
+        
+        /* Contenu du texte */
+        .text-content { margin-bottom: 20px; }
+        .text-ar { 
+            direction: rtl; text-align: justify; font-size: 20px; 
+            font-family: 'Times New Roman', serif; line-height: 1.6; 
+        }
+        .text-fr { 
+            text-align: justify; font-size: 16px; 
+            line-height: 1.6; 
+        }
+        .text-content p { margin: 12px 0; } 
+        
+        /* Signatures */
+        .signatures { 
+            display: flex; 
+            justify-content: space-around; 
+            margin-top: 30px; 
+            margin-bottom: 20px; 
+        }
+        .signature-box { text-align: center; }
+        .sig-ar { font-weight: bold; font-family: 'Times New Roman', serif; font-size: 20px; margin-bottom: 5px;}
+        .sig-fr { font-weight: bold; font-size: 15px;}
+        
+        /* Pied de page */
+        .footer { 
+            margin-top: auto; 
+            text-align: center; 
+            font-size: 11px; 
+            border-top: 1px solid #000; 
+            padding-top: 10px;
+        }
+
+        /* Mode Impression (Génération PDF) */
+        @media print {
+            body, html { background: white; padding: 0; margin: 0; display: block; }
+            .form-container { display: none !important; }
+            .preview-wrapper { 
+                overflow: visible; 
+                margin: 0;
+                padding: 0;
+            }
+            .page-a4 { 
+                box-shadow: none; 
+                margin: 0;
+                width: 210mm; 
+                height: 297mm; 
+            }
+            @page { size: A4; margin: 0; } 
+        }
+    </style>
+</head>
+<body>
+
+    <div class="form-container">
+        <center><h2 style="color: #333; margin-top:0;">Attestation de Mariage</h2></center>
+        
+        <div class="form-group" style="background:#eaf4ff; padding:10px; border-radius:5px; border:1px solid #b8daff;">
+            <label>Langue du document :</label>
+            <select id="doc_lang" onchange="updateCertificate()">
+                <option value="ar">Arabe (شهادة زواج)</option>
+                <option value="fr">Français (Attestation de Mariage)</option>
+            </select>
+        </div>
+
+        <div class="form-section">
+            <h3>L'Époux (Le Mari)</h3>
+            <div class="form-group">
+                <label>Prénom NOM (en français) :</label>
+                <input type="text" id="epoux_fr" placeholder="Ex: Jallal Wahid DERFOUF" onblur="updateArabicNameEpoux()">
+            </div>
+            <div class="form-group">
+                <label>Prénom NOM (en arabe) :</label>
+                <input type="text" id="epoux_ar" dir="rtl" placeholder="Ex: جلال وحيد درفوف" oninput="updateCertificate()">
+            </div>
+            <div class="form-group">
+                <label>Date de naissance :</label>
+                <input type="date" id="dob_epoux" onchange="updateCertificate()">
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>L'Épouse (La Femme)</h3>
+            <div class="form-group">
+                <label>Prénom NOM (en français) :</label>
+                <input type="text" id="epouse_fr" placeholder="Ex: Perrine SORTAIS" onblur="updateArabicNameEpouse()">
+            </div>
+            <div class="form-group">
+                <label>Prénom NOM (en arabe) :</label>
+                <input type="text" id="epouse_ar" dir="rtl" placeholder="Ex: بيرين سورتايس" oninput="updateCertificate()">
+            </div>
+            <div class="form-group">
+                <label>Date de naissance :</label>
+                <input type="date" id="dob_epouse" onchange="updateCertificate()">
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>Détails de la cérémonie</h3>
+            <div class="form-group">
+                <label>Date du mariage religieux :</label>
+                <input type="date" id="dom" onchange="updateCertificate()">
+            </div>
+        </div>
+
+        <button class="btn" onclick="window.print()">🖨️ Générer le PDF (Imprimer)</button>
+    </div>
+
+    <div class="preview-wrapper">
+        <div class="page-a4">
+            <div class="header">
+                <div class="header-left">
+                    <span class="bold">Mosquée Al Houda</span><br>
+                    9 Rue Edith Piaf<br>
+                    Clermont-Ferrand 63100<br>
+                    France
+                </div>
+                <div class="header-center">
+                    <p class="title-ar" id="title-ar">شهادة زواج</p>
+                    <p class="title-fr" id="title-fr" style="display:none;">ATTESTATION DE MARIAGE</p>
+                </div>
+                <div class="header-right">
+                    <img src="https://raw.githubusercontent.com/arabic-app/conversion/main/logo_al_houda_3.png" alt="Logo" class="logo" id="mosque-logo">
+                </div>
+            </div>
+
+            <div class="bismillah" id="bismillah">
+                بسم الله الرحمن الرحيم وصلى الله وسلم على محمد وعلى آله وصحبه وبعد،
+            </div>
+
+            <div class="text-content">
+                <div id="ar-content" class="text-ar"></div>
+                <div id="fr-content" class="text-fr" style="display:none;"></div>
+            </div>
+
+            <div class="signatures">
+                <div class="signature-box">
+                    <div class="sig-ar">رئيس الجمعية</div>
+                    <div class="sig-fr">Président de l'association</div>
+                </div>
+                <div class="signature-box">
+                    <div class="sig-ar">إمام المسجد</div>
+                    <div class="sig-fr">Imam de la mosquée</div>
+                </div>
+            </div>
+
+            <div class="footer">
+                Déclaration au Journal Officiel de la préfecture du Puy-de-Dôme FRANCE, ASSOCIATION DES JEUNES D'AUVERGNE POUR LE BIEN. Annonce n° 547 63
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Gestion de la modification manuelle de l'arabe
+        let arEpouxEdited = false;
+        let arEpouseEdited = false;
+        
+        const arEpouxInput = document.getElementById('epoux_ar');
+        const frEpouxInput = document.getElementById('epoux_fr');
+        const arEpouseInput = document.getElementById('epouse_ar');
+        const frEpouseInput = document.getElementById('epouse_fr');
+
+        arEpouxInput.addEventListener('input', () => { arEpouxEdited = arEpouxInput.value.trim() !== ""; });
+        arEpouseInput.addEventListener('input', () => { arEpouseEdited = arEpouseInput.value.trim() !== ""; });
+
+        // API de translittération
+        async function fetchGoogleTransliteration(text) {
+            if (!text) return "";
+            const words = text.split(' ');
+            let arabicWords = [];
+            try {
+                for (let word of words) {
+                    if (word.trim() === "") continue;
+                    const url = `https://inputtools.google.com/request?text=${encodeURIComponent(word)}&itc=ar-t-i0-und&num=1&cp=0&cs=1&ie=utf-8&oe=utf-8&app=demopage`;
+                    const response = await fetch(url);
+                    const data = await response.json();
+                    if (data[0] === 'SUCCESS' && data[1] && data[1][0] && data[1][0][1]) {
+                        arabicWords.push(data[1][0][1][0]);
+                    } else {
+                        arabicWords.push(word);
+                    }
+                }
+                return arabicWords.join(' ');
+            } catch (error) {
+                console.error("Erreur API:", error);
+                return text;
+            }
+        }
+
+        async function updateArabicNameEpoux() {
+            updateCertificate(); 
+            if (!arEpouxEdited) {
+                const frName = frEpouxInput.value.trim();
+                if (frName) {
+                    arEpouxInput.placeholder = "Génération...";
+                    const arName = await fetchGoogleTransliteration(frName);
+                    if (!arEpouxEdited) { arEpouxInput.value = arName; updateCertificate(); }
+                    arEpouxInput.placeholder = "Ex: جلال وحيد درفوف";
+                } else {
+                    arEpouxInput.value = ""; updateCertificate();
+                }
+            }
+        }
+
+        async function updateArabicNameEpouse() {
+            updateCertificate(); 
+            if (!arEpouseEdited) {
+                const frName = frEpouseInput.value.trim();
+                if (frName) {
+                    arEpouseInput.placeholder = "Génération...";
+                    const arName = await fetchGoogleTransliteration(frName);
+                    if (!arEpouseEdited) { arEpouseInput.value = arName; updateCertificate(); }
+                    arEpouseInput.placeholder = "Ex: بيرين سورتايس";
+                } else {
+                    arEpouseInput.value = ""; updateCertificate();
+                }
+            }
+        }
+
+        function updateCertificate() {
+            const epouxFr = document.getElementById('epoux_fr').value || '[NOM Époux Français]';
+            const epouxAr = document.getElementById('epoux_ar').value || '[اسم الزوج]';
+            const epouseFr = document.getElementById('epouse_fr').value || '[NOM Épouse Français]';
+            const epouseAr = document.getElementById('epouse_ar').value || '[اسم الزوجة]';
+            
+            const lang = document.getElementById('doc_lang').value;
+            
+            // Format arabe JJ / MM / AAAA
+            const formatDateAr = (dateStr) => {
+                if(!dateStr) return '[يوم / شهر / سنة]';
+                const parts = dateStr.split('-');
+                if(parts.length !== 3) return '[يوم / شهر / سنة]';
+                return `${parts[2]} / ${parts[1]} / ${parts[0]}`;
+            };
+            
+            // Format français JJ/MM/AAAA
+            const formatDateFr = (dateStr) => {
+                if(!dateStr) return '[JJ/MM/AAAA]';
+                const parts = dateStr.split('-');
+                if(parts.length !== 3) return '[JJ/MM/AAAA]';
+                return `${parts[2]}/${parts[1]}/${parts[0]}`;
+            };
+
+            const dobEpouxAr = formatDateAr(document.getElementById('dob_epoux').value);
+            const dobEpouseAr = formatDateAr(document.getElementById('dob_epouse').value);
+            const domAr = formatDateAr(document.getElementById('dom').value);
+            
+            const dobEpouxFr = formatDateFr(document.getElementById('dob_epoux').value);
+            const dobEpouseFr = formatDateFr(document.getElementById('dob_epouse').value);
+            const domFr = formatDateFr(document.getElementById('dom').value);
+            
+            const todayObj = new Date();
+            const todayFr = `${String(todayObj.getDate()).padStart(2, '0')}/${String(todayObj.getMonth() + 1).padStart(2, '0')}/${todayObj.getFullYear()}`;
+            const todayAr = `${String(todayObj.getDate()).padStart(2, '0')} / ${String(todayObj.getMonth() + 1).padStart(2, '0')} / ${todayObj.getFullYear()}`;
+
+            const arContent = document.getElementById('ar-content');
+            const frContent = document.getElementById('fr-content');
+            const bismillah = document.getElementById('bismillah');
+            const titleAr = document.getElementById('title-ar');
+            const titleFr = document.getElementById('title-fr');
+
+            if (lang === 'ar') {
+                titleAr.style.display = 'block';
+                titleFr.style.display = 'none';
+                bismillah.style.display = 'block';
+                arContent.style.display = 'block';
+                frContent.style.display = 'none';
+                
+                arContent.innerHTML = `
+                    <p>أنا الممضي أسفله، عز الدين خامله ، إمام مسجد الهدى بمدينة كلارمون فارون بفرنسا، أشهد أنني أشرفت على عقد قران :</p>
+                    <div style="text-align: center; font-size: 24px; margin: 20px 0; line-height:2;">
+                        الأخ <span class="bold">${epouxAr}</span> المولود في <span class="bold">${dobEpouxAr}</span><br>
+                        على الأخت <span class="bold">${epouseAr}</span> المولودة في <span class="bold">${dobEpouseAr}</span>
+                    </div>
+                    <p>وتم ذلك بتاريخ <span class="bold">${domAr}</span></p>
+                    <p>مُنحت له هذه الشهادة للإدلاء بها عند الحاجة.</p>
+                    <p>حرر في كلارمون فارون بتاريخ <span class="bold">${todayAr}</span></p>
+                `;
+            } else {
+                titleAr.style.display = 'none';
+                titleFr.style.display = 'block';
+                bismillah.style.display = 'none';
+                arContent.style.display = 'none';
+                frContent.style.display = 'block';
+                
+                frContent.innerHTML = `
+                    <p>Je soussigné, Azedine KHAMALLAH, Imam de la mosquée Al Houda à CLERMONT FERRAND (France), certifie avoir assuré la célébration du mariage religieux de :</p>
+                    <div style="text-align: center; font-size: 20px; margin: 20px 0; line-height:2;">
+                        <span class="bold">${epouxFr}</span> né le <span class="bold">${dobEpouxFr}</span><br>
+                        et<br>
+                        <span class="bold">${epouseFr}</span> née le <span class="bold">${dobEpouseFr}</span>
+                    </div>
+                    <p>à la date du <span class="bold">${domFr}</span>.</p>
+                    <br>
+                    <p>Ce certificat lui a été délivré pour servir et valoir ce que de droit.</p>
+                    <p>Fait à Clermont-Ferrand le <span class="bold">${todayFr}</span></p>
+                `;
+            }
+        }
+
+        window.onload = updateCertificate;
+    </script>
+</body>
+</html>
