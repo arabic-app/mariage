@@ -80,11 +80,22 @@
             color: var(--text-secondary); 
             font-size: 14px;
         }
+
+        /* Alignement parfait du champ et de son bouton d'action */
+        .input-with-action {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .input-with-action input {
+            flex-grow: 1;
+        }
         
-        /* Champs Material */
-        .form-group input, .form-group select { 
+        /* Champs Material avec hauteur unifiée */
+        .form-group input, .form-group select, .lang-selector select { 
             width: 100%; 
-            padding: 12px 16px; 
+            height: 48px; /* Hauteur fixe identique pour tous les éléments */
+            padding: 0 16px; 
             box-sizing: border-box; 
             border: 1px solid var(--border-color); 
             border-radius: 4px;
@@ -95,11 +106,20 @@
             color: var(--text-primary);
         }
         
-        .form-group input:focus, .form-group select:focus {
+        .form-group input:focus, .form-group select:focus, .lang-selector select:focus {
             outline: none;
             border-color: var(--primary-color);
             background-color: var(--surface-color);
             box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+        }
+
+        .form-group i.hint {
+            display: block;
+            margin-top: 6px;
+            font-style: italic;
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 400;
         }
 
         /* Langue selector */
@@ -111,7 +131,7 @@
             margin-bottom: 24px;
         }
 
-        /* Bouton Material */
+        /* Bouton Principal Material */
         .btn { 
             background: var(--primary-color); 
             color: white; 
@@ -139,6 +159,31 @@
             box-shadow: 0 2px 4px -1px rgba(0,0,0,.2), 0 4px 5px 0 rgba(0,0,0,.14), 0 1px 10px 0 rgba(0,0,0,.12);
         }
 
+        /* Bouton Icône pour la translittération, calé à la même hauteur */
+        .btn-icon {
+            background: transparent;
+            color: var(--primary-color);
+            border: 1px solid var(--border-color);
+            width: 48px;  /* Strictement identique à la hauteur */
+            height: 48px; /* Strictement identique à la hauteur */
+            min-width: 48px;
+            padding: 0;
+            cursor: pointer;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s, border-color 0.2s;
+            box-sizing: border-box;
+        }
+        .btn-icon:hover {
+            background-color: rgba(26, 115, 232, 0.04);
+            border-color: var(--primary-color);
+        }
+        .btn-icon:active {
+            background-color: rgba(26, 115, 232, 0.1);
+        }
+
         /* Preview */
         .preview-wrapper {
             width: 100%;
@@ -160,7 +205,6 @@
             color: black;
         }
         
-        /* Header & Content (conservé pour l'A4) */
         .header { 
             display: flex; 
             justify-content: space-between; 
@@ -195,7 +239,7 @@
         .subtitle { font-size: 16px; margin: 5px 0 0 0; font-style: italic; }
 
         .bismillah { 
-            text-align: right; font-size: 20px; margin-bottom: 25px; 
+            text-align: center; font-size: 20px; margin-bottom: 25px; 
             font-family: 'Times New Roman', serif; direction: rtl;
         }
         
@@ -254,7 +298,7 @@
         
         <div class="lang-selector">
             <label style="font-weight:500; margin-bottom:8px; display:block;">Langue du document :</label>
-            <select id="doc_lang" onchange="updateCertificate()" style="width:100%; padding:12px 16px; border-radius:4px;">
+            <select id="doc_lang" onchange="updateCertificate()">
                 <option value="ar">Arabe (شهادة زواج)</option>
                 <option value="fr">Français (Attestation de Mariage)</option>
             </select>
@@ -264,11 +308,17 @@
             <h3>L'Époux (Le Mari)</h3>
             <div class="form-group">
                 <label>Prénom NOM (en français)</label>
-                <input type="text" id="epoux_fr" placeholder="Ex: Jallal Wahid DERFOUF" onblur="updateArabicNameEpoux()">
+                <input type="text" id="epoux_fr" placeholder="Ex: Jallal Wahid DERFOUF" oninput="updateCertificate()">
             </div>
             <div class="form-group">
-                <label>Prénom NOM (en arabe) <span style="font-style:italic; font-size:13px; color:#5f6368;">(Généré automatiquement si vide)</span></label>
-                <input type="text" id="epoux_ar" dir="rtl" placeholder="Ex: جلال وحيد درفوف" oninput="updateCertificate()">
+                <label>Prénom NOM (en arabe)</label>
+                <div class="input-with-action">
+                    <input type="text" id="epoux_ar" dir="rtl" placeholder="Ex: جلال وحيد درفوف" oninput="updateCertificate()">
+                    <button type="button" class="btn-icon" onclick="generateArabicNameEpoux()">
+                        <span class="material-icons">translate</span>
+                    </button>
+                </div>
+                <i class="hint">Cliquez sur l'icône pour générer le nom automatiquement via Google</i>
             </div>
             <div class="form-group">
                 <label>Date de naissance</label>
@@ -280,11 +330,17 @@
             <h3>L'Épouse (La Femme)</h3>
             <div class="form-group">
                 <label>Prénom NOM (en français)</label>
-                <input type="text" id="epouse_fr" placeholder="Ex: Perrine SORTAIS" onblur="updateArabicNameEpouse()">
+                <input type="text" id="epouse_fr" placeholder="Ex: Perrine SORTAIS" oninput="updateCertificate()">
             </div>
             <div class="form-group">
-                <label>Prénom NOM (en arabe) <span style="font-style:italic; font-size:13px; color:#5f6368;">(Généré automatiquement si vide)</span></label>
-                <input type="text" id="epouse_ar" dir="rtl" placeholder="Ex: بيرين سورتايس" oninput="updateCertificate()">
+                <label>Prénom NOM (en arabe)</label>
+                <div class="input-with-action">
+                    <input type="text" id="epouse_ar" dir="rtl" placeholder="Ex: بيرين سورتايس" oninput="updateCertificate()">
+                    <button type="button" class="btn-icon" onclick="generateArabicNameEpouse()">
+                        <span class="material-icons">translate</span>
+                    </button>
+                </div>
+                <i class="hint">Cliquez sur l'icône pour générer le nom automatiquement via Google</i>
             </div>
             <div class="form-group">
                 <label>Date de naissance</label>
@@ -351,16 +407,10 @@
     </div>
 
     <script>
-        let arEpouxEdited = false;
-        let arEpouseEdited = false;
-        
         const arEpouxInput = document.getElementById('epoux_ar');
         const frEpouxInput = document.getElementById('epoux_fr');
         const arEpouseInput = document.getElementById('epouse_ar');
         const frEpouseInput = document.getElementById('epouse_fr');
-
-        arEpouxInput.addEventListener('input', () => { arEpouxEdited = arEpouxInput.value.trim() !== ""; });
-        arEpouseInput.addEventListener('input', () => { arEpouseEdited = arEpouseInput.value.trim() !== ""; });
 
         async function fetchGoogleTransliteration(text) {
             if (!text) return "";
@@ -385,41 +435,25 @@
             }
         }
 
-        async function updateArabicNameEpoux() {
-            updateCertificate(); 
-            if (!arEpouxEdited) {
-                const frName = frEpouxInput.value.trim();
-                if (frName) {
-                    arEpouxInput.placeholder = "Génération...";
-                    const arName = await fetchGoogleTransliteration(frName);
-                    if (!arEpouxEdited) { 
-                        arEpouxInput.value = arName; 
-                        updateCertificate(); 
-                    }
-                    arEpouxInput.placeholder = "Ex: جلال وحيد درفوف";
-                } else {
-                    arEpouxInput.value = ""; 
-                    updateCertificate();
-                }
+        async function generateArabicNameEpoux() {
+            const frName = frEpouxInput.value.trim();
+            if (frName) {
+                arEpouxInput.placeholder = "Génération...";
+                const arName = await fetchGoogleTransliteration(frName);
+                arEpouxInput.value = arName;
+                arEpouxInput.placeholder = "Ex: جلال وحيد درفوف";
+                updateCertificate();
             }
         }
 
-        async function updateArabicNameEpouse() {
-            updateCertificate(); 
-            if (!arEpouseEdited) {
-                const frName = frEpouseInput.value.trim();
-                if (frName) {
-                    arEpouseInput.placeholder = "Génération...";
-                    const arName = await fetchGoogleTransliteration(frName);
-                    if (!arEpouseEdited) { 
-                        arEpouseInput.value = arName; 
-                        updateCertificate(); 
-                    }
-                    arEpouseInput.placeholder = "Ex: بيرين سورتايس";
-                } else {
-                    arEpouseInput.value = ""; 
-                    updateCertificate();
-                }
+        async function generateArabicNameEpouse() {
+            const frName = frEpouseInput.value.trim();
+            if (frName) {
+                arEpouseInput.placeholder = "Génération...";
+                const arName = await fetchGoogleTransliteration(frName);
+                arEpouseInput.value = arName;
+                arEpouseInput.placeholder = "Ex: بيرين سورتايس";
+                updateCertificate();
             }
         }
 
